@@ -6,6 +6,10 @@
 
 **Allan David dos Santos Lopes da Costa / 202309405288**
 
+## Descrição
+
+O programa foi desenvolvido para auxiliar idosos, familiares e cuidadores no gerenciamento de medicamentos. A plataforma permite cadastrar medicamentos, horários de administração, dosagens e lembretes automáticos, reduzindo o risco de esquecimentos, atrasos ou uso incorreto. Além disso, o sistema registra o histórico de medicação, facilitando o acompanhamento da adesão ao tratamento e contribuindo para a melhoria da qualidade de vida e da saúde da população idosa.
+
 ## Instruções básicas para rodar o projeto
 
 **Prerequisitos:** Node.js
