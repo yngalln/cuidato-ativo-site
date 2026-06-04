@@ -17,6 +17,7 @@ O programa foi desenvolvido para auxiliar idosos, familiares e cuidadores no ger
 Clone o repositório
 
 git clone https://github.com/yngalln/cuidato-ativo-site.git
+
 cd cuidato-ativo-site
 
 Instale as dependências:
