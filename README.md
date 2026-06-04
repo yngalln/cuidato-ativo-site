@@ -14,17 +14,17 @@ O programa foi desenvolvido para auxiliar idosos, familiares e cuidadores no ger
 
 **Prerequisitos:** Node.js
 
-Clone o repositório
+- Clone o repositório:
 
 git clone https://github.com/yngalln/cuidato-ativo-site.git
 
 cd cuidato-ativo-site
 
-Instale as dependências:
+- Instale as dependências:
 
 'npm install'
 
-Inicie o servidor de desenvolvimento:
+- Inicie o servidor de desenvolvimento:
 
 'npm run dev'
 
