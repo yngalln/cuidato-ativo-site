@@ -1,0 +1,73 @@
+{
+  "entities": {
+    "User": {
+      "title": "User",
+      "description": "User profile and settings",
+      "type": "object",
+      "properties": {
+        "uid": { "type": "string" },
+        "email": { "type": "string" },
+        "displayName": { "type": "string" },
+        "userRole": { "type": "string", "enum": ["elderly", "caregiver"] },
+        "preferences": {
+          "type": "object",
+          "properties": {
+            "fontSize": { "type": "string", "enum": ["normal", "large", "extra-large"] },
+            "highContrast": { "type": "boolean" }
+          }
+        },
+        "createdAt": { "type": "string", "format": "date-time" },
+        "updatedAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["uid", "email", "createdAt", "updatedAt"]
+    },
+    "Medication": {
+      "title": "Medication",
+      "description": "A medication to be taken by the user",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "userId": { "type": "string" },
+        "name": { "type": "string" },
+        "dosage": { "type": "string" },
+        "frequency": { "type": "string" },
+        "times": { "type": "array", "items": { "type": "string" } },
+        "instructions": { "type": "string" },
+        "active": { "type": "boolean" },
+        "createdAt": { "type": "string", "format": "date-time" },
+        "updatedAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["id", "userId", "name", "times", "active", "createdAt", "updatedAt"]
+    },
+    "IntakeLog": {
+      "title": "Intake Log",
+      "description": "Record of when a medication was taken or missed",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "userId": { "type": "string" },
+        "medicationId": { "type": "string" },
+        "scheduledTime": { "type": "string", "format": "date-time" },
+        "actualTime": { "type": "string", "format": "date-time" },
+        "status": { "type": "string", "enum": ["taken", "missed", "skipped"] },
+        "notes": { "type": "string" },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["id", "userId", "medicationId", "scheduledTime", "status", "createdAt"]
+    }
+  },
+  "firestore": {
+    "/users/{userId}": {
+      "schema": "User",
+      "description": "User profiles"
+    },
+    "/users/{userId}/medications/{medicationId}": {
+      "schema": "Medication",
+      "description": "Medications assigned to a user"
+    },
+    "/users/{userId}/logs/{logId}": {
+      "schema": "IntakeLog",
+      "description": "Intake history for a user"
+    }
+  }
+}

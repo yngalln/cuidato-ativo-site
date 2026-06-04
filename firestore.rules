@@ -1,0 +1,117 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // 0. Global Safety Net
+    match /{document=**} {
+      allow read, write: if false;
+    }
+
+    // --- Helpers ---
+
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function isEmailVerified() {
+      // Mandate email verification for all writes
+      return request.auth.token.email_verified == true;
+    }
+
+    function isOwner(userId) {
+      return isSignedIn() && request.auth.uid == userId;
+    }
+
+    function isValidId(id) {
+      return id is string && id.size() <= 128 && id.matches('^[a-zA-Z0-9_\\-]+$');
+    }
+
+    function incoming() {
+      return request.resource.data;
+    }
+
+    function existing() {
+      return resource.data;
+    }
+
+    // --- Validation Blueprints ---
+
+    function isValidUser(data) {
+      return data.uid == request.auth.uid
+        && data.email is string && data.email.size() <= 256
+        && (data.displayName == null || (data.displayName is string && data.displayName.size() <= 128))
+        && data.userRole in ['elderly', 'caregiver']
+        && data.createdAt == request.time
+        && data.updatedAt == request.time
+        && data.keys().hasAll(['uid', 'email', 'userRole', 'createdAt', 'updatedAt'])
+        && data.keys().size() >= 5;
+    }
+
+    function isValidMedication(data, userId) {
+      return data.userId == userId
+        && data.name is string && data.name.size() > 0 && data.name.size() <= 128
+        && data.dosage is string && data.dosage.size() <= 128
+        && data.frequency is string && data.frequency.size() <= 128
+        && data.times is list && data.times.size() > 0 && data.times.size() <= 24
+        && (data.times[0] is string)
+        && data.active is bool
+        && data.createdAt is timestamp
+        && data.updatedAt is timestamp
+        && data.keys().hasAll(['id', 'userId', 'name', 'dosage', 'frequency', 'times', 'active', 'createdAt', 'updatedAt'])
+        && data.keys().size() <= 12;
+    }
+
+    function isValidLog(data, userId) {
+      return data.userId == userId
+        && data.medicationId is string && data.medicationId.size() <= 128
+        && data.scheduledTime is timestamp
+        && data.status in ['taken', 'missed', 'skipped']
+        && (data.notes == null || (data.notes is string && data.notes.size() <= 512))
+        && data.createdAt == request.time
+        && data.keys().hasAll(['id', 'userId', 'medicationId', 'scheduledTime', 'status', 'createdAt'])
+        && data.keys().size() <= 8;
+    }
+
+    // --- Collection Routes ---
+
+    match /users/{userId} {
+      allow get: if isOwner(userId);
+      allow create: if isOwner(userId) && isValidUser(incoming());
+      allow update: if isOwner(userId)
+        && incoming().uid == existing().uid
+        && incoming().createdAt == existing().createdAt
+        && incoming().updatedAt == request.time
+        && (
+          // Action: Profile Update
+          incoming().diff(existing()).affectedKeys().hasOnly(['displayName', 'userRole', 'preferences', 'updatedAt'])
+        );
+
+      // Medications sub-collection
+      match /medications/{medicationId} {
+        allow list, get: if isOwner(userId);
+        allow create: if isOwner(userId) 
+          && isValidId(medicationId)
+          && incoming().createdAt == request.time
+          && isValidMedication(incoming(), userId);
+        allow update: if isOwner(userId)
+          && incoming().userId == existing().userId
+          && incoming().createdAt == existing().createdAt
+          && incoming().updatedAt == request.time
+          && (
+            // Action: Toggle Active or Edit details
+            incoming().diff(existing()).affectedKeys().hasAny(['name', 'dosage', 'frequency', 'times', 'instructions', 'active', 'updatedAt'])
+          );
+        allow delete: if isOwner(userId);
+      }
+
+      // Intake logs sub-collection
+      match /logs/{logId} {
+        allow list, get: if isOwner(userId);
+        allow create: if isOwner(userId)
+          && isValidId(logId)
+          && isValidLog(incoming(), userId);
+        // Logs are usually immutable historical records once written
+        allow delete: if isOwner(userId);
+      }
+    }
+  }
+}

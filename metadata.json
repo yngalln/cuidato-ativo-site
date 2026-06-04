@@ -1,0 +1,6 @@
+{
+  "name": "Cuidado Ativo",
+  "description": "Aplicativo de auxilio no controle de medicação para idosos com foco em acessibilidade, interface intuitiva e sincronização em nuvem via Firebase.",
+  "requestFramePermissions": [],
+  "majorCapabilities": []
+}
